@@ -1,4 +1,4 @@
-mport requests,json,os
+import requests,json,os
 
 # 推送开关，填off不开启(默认)，填on同时开启cookie失效通知和签到成功通知
 sever = os.environ["SERVE"]

@@ -1,31 +1,42 @@
-name: glados
+name: glados-auto-checkin
 
 on:
-  # Triggers the workflow on push or pull request events but only for the main branch
-  #push:
-  #  branches: [ main ]
-  #pull_request:
-  #  branches: [ main ]
-
+  workflow_dispatch: 
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
   schedule:
-  - cron: "30 12 * * *"
-  
-  workflow_dispatch:
+    - cron:  0 19 * * * 
+      # 
+      # https://tool.lu/crontab/
+      # https://datetime360.com/cn/utc-cst-china-time/
+  #watch:
+  #    types: started   
 
 jobs:
-  build:
-    runs-on: windows-2019
+  checkin:
+    runs-on: ubuntu-latest
+    #if: github.event.repository.owner.id == github.event.sender.id
+    # https://p3terx.com/archives/github-actions-manual-trigger.html
+    
     steps:
-      - uses: actions/checkout@v3
-      - name: Install requirements
-        run: |
-          pip3 install -r ./glados/requirements.txt
-      - name: Run checkin
-        run: |
-          python3 ./glados/main.py --cookie_string "${{ secrets.GLADOS_COOKIE }}"
-        env: 
-          PUSHPLUS_TOKEN: ${{ secrets.PUSHPLUS_TOKEN }}
-          SERVERCHAN_SENDKEY: ${{ secrets.SERVERCHAN_SENDKEY }}
-          WECOM_WEBHOOK: ${{ secrets.WECOM_WEBHOOK }}
-          BARK_DEVICEKEY: ${{ secrets.BARK_DEVICEKEY }}
-      - uses: gautamkrishnar/keepalive-workflow@master  
+    - uses: actions/checkout@v2
+
+    - name: Install Python
+      run: |
+        sudo apt update && \
+        sudo apt install python3
+      
+    - name: requirements
+      run: |
+        pip3 install -r requirements.txt
+       # if [ -f requirements.txt ]; then pip install -r requirements.txt; fi 
+    - name: Checkin
+      run: |
+        python3 checkin.py 
+      env: 
+        SERVE: ${{ secrets.SERVE }}
+        SCKEY: ${{ secrets.SCKEY }}
+        COOKIES: ${{ secrets.COOKIES }}
+    - uses: gautamkrishnar/keepalive-workflow@master # using the workflow with default settings
